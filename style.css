@@ -74,3 +74,8 @@ body {
     background-color: red; /* Explosion color */
     border-radius: 50%; /* Keep it circular */
 }
+
+#timer {
+    font-weight: bold;
+    color: #ff7043;
+}

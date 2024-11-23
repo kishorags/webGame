@@ -28,6 +28,30 @@ function resetItemPosition() {
     item.style.left = Math.floor(Math.random() * (gameContainerWidth - 30)) + "px";
 }
 
+// Countdown timer
+function startTimer() {
+    const timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            isGameOver = true;
+            alert(`Game Over! Your score is: ${score}`);
+        } else {
+            timeLeft--;
+            timerDisplay.innerText = `Time Left: ${timeLeft}s`;
+        }
+    }, 1000);
+}
+
+// Function to trigger the blast effect
+function triggerBlast() {
+    item.classList.add("blast");
+    setTimeout(() => {
+        item.style.display = "none"; // Hide the item after the blast
+        resetItemPosition();         // Reset for next fall
+    }, 300); // Match this duration to the animation in CSS
+}
+
+
 // Main game loop: makes item fall and checks for collision
 function gameLoop() {
     if (isGameOver) return;
@@ -47,7 +71,8 @@ function gameLoop() {
     if (itemY > 350 && itemX >= playerX && itemX <= playerX + 50) {  // Adjust 350 based on player position
         score++;
         scoreDisplay.innerText = "Score: " + score;
-        resetItemPosition();
+        //resetItemPosition();
+        triggerBlast();
     }
 
     // Repeat loop
@@ -56,4 +81,5 @@ function gameLoop() {
 
 // Start the game
 resetItemPosition();
+startTimer()
 gameLoop();
