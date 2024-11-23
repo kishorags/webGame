@@ -71,8 +71,9 @@ function gameLoop() {
     if (itemY > 350 && itemX >= playerX && itemX <= playerX + 50) {  // Adjust 350 based on player position
         score++;
         scoreDisplay.innerText = "Score: " + score;
-        //resetItemPosition();
         triggerBlast();
+        resetItemPosition();
+        
     }
 
     // Repeat loop
