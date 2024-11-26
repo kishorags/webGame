@@ -36,12 +36,16 @@ function startGame() {
     clearInterval(obstacleInterval);
     clearInterval(coinInterval);
     clearInterval(timerInterval);
+//    clearInterval(gameSpeedInterval);
 
     // Start game logic
     gameInterval = setInterval(updateGame, 20);
     obstacleInterval = setInterval(spawnObstacle, spawnRate);
     coinInterval = setInterval(spawnCoin, coinSpawnRate);
     timerInterval = setInterval(updateTimer, 1000); // Start timer countdown
+    // Call this every 10 seconds
+  //  gameSpeedInterval = setInterval(updateGameSpeed, 10000);
+
 }
 
 // Update Timer
@@ -55,6 +59,7 @@ function updateTimer() {
 }
 
 // End Game
+
 function endGame() {
     isGameOver = true;
     clearInterval(gameInterval);
@@ -62,9 +67,23 @@ function endGame() {
     clearInterval(coinInterval);
     clearInterval(timerInterval);
 
+    // Add flashing animation to the Game Over screen
+    gameOverScreen.style.animation = 'flashGameOver 0.5s ease-in-out infinite';
     finalScore.innerText = `Final Score: ${score}`;
     gameOverScreen.style.display = 'block';
 }
+
+// Add CSS keyframes dynamically through JavaScript
+const styleSheet = document.createElement("style");
+
+// Add CSS keyframes dynamically through JavaScript
+styleSheet.innerText += `
+@keyframes flashGameOver {
+    0% { background-color: red; color: white; }
+    50% { background-color: yellow; color: black; }
+    100% { background-color: red; color: white; }
+}`;
+
 
 
 
@@ -82,7 +101,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-function spawnObstacle() {
+/* function spawnObstacle() {
     if (isGameOver) return;
 
     // Randomly select a lane for the obstacle
@@ -106,8 +125,37 @@ function spawnObstacle() {
     gameContainer.appendChild(obstacle);
     console.log('Obstacle spawned in lane:', obstacleLane);
 }
+ */
 
-function spawnCoin() {
+function spawnObstacle() {
+    if (isGameOver) return;
+
+    let obstacleLane = lanes[Math.floor(Math.random() * 3)];
+
+    const coins = document.querySelectorAll('.coin');
+    for (let coin of coins) {
+        const coinLeft = parseInt(window.getComputedStyle(coin).getPropertyValue('left'));
+        if (coinLeft === obstacleLane) return; // Avoid overlap
+    }
+
+    const obstacle = document.createElement('div');
+    obstacle.classList.add('obstacle');
+    obstacle.style.left = obstacleLane + 'px';
+    obstacle.style.top = '0px';
+
+    // Add bounce animation
+    obstacle.style.animation = 'bounceObstacle 1s ease-in-out infinite';
+    gameContainer.appendChild(obstacle);
+}
+
+// Add CSS keyframes dynamically through JavaScript
+styleSheet.innerText += `
+@keyframes bounceObstacle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}`;
+
+/* function spawnCoin() {
     if (isGameOver) return;
 
     // Randomly select a lane for the coin
@@ -130,34 +178,37 @@ function spawnCoin() {
     coin.style.top = '0px';
     gameContainer.appendChild(coin);
     console.log('Coin spawned in lane:', coinLane);
-}
+} */
 
 
-
-/* function spawnObstacle() {
+function spawnCoin() {
     if (isGameOver) return;
 
-    console.log("Spawning an obstacle..."); // Debugging log
-    const obstacle = document.createElement('div');
-    obstacle.classList.add('obstacle'); // Add the "obstacle" class
-    obstacle.style.left = lanes[Math.floor(Math.random() * 3)] + 'px'; // Random lane
-    obstacle.style.top = '0px'; // Start at the top of the game container
+    let coinLane = lanes[Math.floor(Math.random() * 3)];
 
-    // Append the obstacle to the game container
-    gameContainer.appendChild(obstacle);
-    console.log("Obstacle added to DOM", obstacle); // Debugging log
-}
+    const obstacles = document.querySelectorAll('.obstacle');
+    for (let obstacle of obstacles) {
+        const obstacleLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue('left'));
+        if (obstacleLeft === coinLane) return; // Avoid overlap
+    }
 
-
-// Spawn Coins
-function spawnCoin() {
     const coin = document.createElement('div');
     coin.classList.add('coin');
-    coin.style.left = lanes[Math.floor(Math.random() * 3)] + 'px';
+    coin.style.left = coinLane + 'px';
     coin.style.top = '0px';
+
+    // Add rotation animation via JS
+    coin.style.animation = 'rotateCoin 1.5s linear infinite';
     gameContainer.appendChild(coin);
 }
- */
+
+
+styleSheet.innerText = `
+@keyframes rotateCoin {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}`;
+document.head.appendChild(styleSheet);
 
 
 // Update Game
@@ -193,10 +244,11 @@ function updateGame() {
         if (checkCollision(player, coin)) {
             coin.remove();
             score += 10;
-            scoreDisplay.innerText = `Score: ${score}`;
+            scoreDisplay.innerText = `Score: ${score}`; 
         }
     });
 }
+
 
 // Collision Detection
 function checkCollision(a, b) {
@@ -211,5 +263,17 @@ function checkCollision(a, b) {
     );
 }
 
+function updateGameSpeed() {
+    speed += 0.05; // Gradually increase speed
+    spawnRate = Math.max(1000, spawnRate - 100); // Decrease spawn intervals
+    coinSpawnRate = Math.max(1500, coinSpawnRate - 100);
+
+    clearInterval(obstacleInterval);
+    clearInterval(coinInterval);
+    obstacleInterval = setInterval(spawnObstacle, spawnRate);
+    coinInterval = setInterval(spawnCoin, coinSpawnRate);
+}
+
+setInterval(updateGameSpeed, 10000);
 
 startGame();
